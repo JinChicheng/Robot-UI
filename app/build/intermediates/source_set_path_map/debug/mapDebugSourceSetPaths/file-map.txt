@@ -1,0 +1,8 @@
+com.robotui.mvp.app-pngs-0 /Users/jinchicheng/Desktop/Robot-UI/app/build/generated/res/pngs/debug
+com.robotui.mvp.app-resValues-1 /Users/jinchicheng/Desktop/Robot-UI/app/build/generated/res/resValues/debug
+com.robotui.mvp.app-updated_navigation_xml-2 /Users/jinchicheng/Desktop/Robot-UI/app/build/generated/updated_navigation_xml/debug
+com.robotui.mvp.app-packageDebugResources-3 /Users/jinchicheng/Desktop/Robot-UI/app/build/intermediates/incremental/debug/packageDebugResources/merged.dir
+com.robotui.mvp.app-packageDebugResources-4 /Users/jinchicheng/Desktop/Robot-UI/app/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
+com.robotui.mvp.app-debug-5 /Users/jinchicheng/Desktop/Robot-UI/app/build/intermediates/merged_res/debug/mergeDebugResources
+com.robotui.mvp.app-debug-6 /Users/jinchicheng/Desktop/Robot-UI/app/src/debug/res
+com.robotui.mvp.app-main-7 /Users/jinchicheng/Desktop/Robot-UI/app/src/main/res

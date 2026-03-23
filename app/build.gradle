@@ -1,0 +1,46 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.robotui.mvp'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.robotui.mvp"
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+}
+
+tasks.register("prepareFaceAssets", Exec) {
+    group = "robot-ui"
+    description = "Builds the local kaia-face.js bundle and copies browser assets into app/src/main/assets/face."
+    workingDir rootDir
+    commandLine "bash", "scripts/prepare_face_assets.sh"
+}
+
+dependencies {
+}

@@ -1,0 +1,248 @@
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    color: #fff;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overscroll-behavior: none;
+}
+
+.face-shell {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(circle at center, rgba(32, 32, 32, 0.55), rgba(0, 0, 0, 0) 44%),
+        linear-gradient(180deg, #050505 0%, #000000 100%);
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.face-stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.robot-frame {
+    --face-size: 520px;
+    --face-offset-x: 0px;
+    --face-offset-y: -8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: min(var(--face-size), calc(100vw - 56px), calc(100vh - 56px));
+    height: min(var(--face-size), calc(100vw - 56px), calc(100vh - 56px));
+    max-width: 820px;
+    max-height: 820px;
+    transform: translate3d(var(--face-offset-x), var(--face-offset-y), 0);
+}
+
+.robot-figma {
+    --look-x: 0px;
+    --look-y: 0px;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    transform: translate3d(var(--look-x), var(--look-y), 0);
+    transform-origin: center;
+    filter: drop-shadow(0 0 28px rgba(255, 255, 255, 0.08));
+}
+
+.robot-base,
+.features-layer,
+.eyes-layer,
+.mouth-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.features-layer {
+    --feature-look-x: 0px;
+    --feature-look-y: 0px;
+    transform: translate3d(var(--feature-look-x), var(--feature-look-y), 0);
+    transform-origin: center;
+}
+
+.eyes-layer,
+.mouth-layer {
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+    backface-visibility: hidden;
+}
+
+.eyes-layer {
+    z-index: 2;
+}
+
+.mouth-layer {
+    z-index: 3;
+}
+
+.face-label {
+    margin-top: 14px;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.status {
+    position: absolute;
+    bottom: 4vh;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    background: rgba(20, 20, 20, 0.88);
+    color: #f2f2f2;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+}
+
+.emotion-calm .robot-figma {
+    animation: calmFloat 4.2s ease-in-out infinite;
+}
+
+.emotion-calm .mouth-layer {
+    animation: calmMouth 3s ease-in-out infinite;
+}
+
+.emotion-happy .robot-figma {
+    animation: happyBounce 2.2s ease-in-out infinite;
+}
+
+.emotion-happy .mouth-layer {
+    animation: happyMouth 1s ease-in-out infinite;
+}
+
+.emotion-angry .robot-figma {
+    animation: angryRock 0.9s ease-in-out infinite;
+}
+
+.emotion-angry .mouth-layer {
+    animation: angryMouth 0.65s ease-in-out infinite;
+}
+
+.emotion-thinking .robot-figma {
+    animation: thinkingFloat 3.1s ease-in-out infinite;
+}
+
+.emotion-thinking .mouth-layer {
+    animation: thinkingPulse 1.8s ease-in-out infinite;
+}
+
+.state-speaking .mouth-layer {
+    animation: speakingMouth 0.25s ease-in-out infinite;
+}
+
+.state-listening .eyes-layer {
+    animation: listeningEyes 2.6s ease-in-out infinite;
+}
+
+@keyframes calmFloat {
+    0%, 100% { transform: translate3d(var(--look-x), var(--look-y), 0) scale(1); }
+    50% { transform: translate3d(var(--look-x), calc(var(--look-y) - 6px), 0) scale(1.01); }
+}
+
+@keyframes calmMouth {
+    0%, 100% { transform: scale(1, 1); opacity: 0.96; }
+    50% { transform: scale(1.03, 0.98); opacity: 1; }
+}
+
+@keyframes happyBounce {
+    0%, 100% { transform: translate3d(var(--look-x), var(--look-y), 0) scale(1); }
+    35% { transform: translate3d(var(--look-x), calc(var(--look-y) - 10px), 0) scale(1.03); }
+    70% { transform: translate3d(var(--look-x), calc(var(--look-y) - 4px), 0) scale(1.01); }
+}
+
+@keyframes happyMouth {
+    0%, 100% { transform: scale(1, 1); }
+    50% { transform: scale(1.08, 1.05); }
+}
+
+@keyframes angryRock {
+    0%, 100% { transform: translate3d(var(--look-x), var(--look-y), 0) rotate(0deg); }
+    25% { transform: translate3d(calc(var(--look-x) - 2px), var(--look-y), 0) rotate(-1.4deg); }
+    75% { transform: translate3d(calc(var(--look-x) + 2px), var(--look-y), 0) rotate(1.4deg); }
+}
+
+@keyframes angryMouth {
+    0%, 100% { transform: scale(1, 1); }
+    50% { transform: scale(1.05, 0.95); }
+}
+
+@keyframes thinkingFloat {
+    0%, 100% { transform: translate3d(var(--look-x), var(--look-y), 0); }
+    50% { transform: translate3d(calc(var(--look-x) - 4px), calc(var(--look-y) - 8px), 0); }
+}
+
+@keyframes thinkingPulse {
+    0%, 100% { transform: scale(1); opacity: 0.94; }
+    50% { transform: scale(1.04); opacity: 1; }
+}
+
+@keyframes speakingMouth {
+    0%, 100% { transform: scale(1, 1); }
+    50% { transform: scale(1.12, 0.86); }
+}
+
+@keyframes listeningEyes {
+    0%, 100% { transform: scale(1, 1); }
+    50% { transform: scale(1.01, 0.98); }
+}
+
+@media (max-width: 960px) {
+    .face-shell,
+    .face-stage {
+        padding: 8px;
+    }
+
+    .robot-frame {
+        width: min(var(--face-size), calc(100vw - 32px), calc(100vh - 32px));
+        height: min(var(--face-size), calc(100vw - 32px), calc(100vh - 32px));
+    }
+}
+
+@media (orientation: portrait) {
+    .face-shell {
+        padding: 10px 10px 6px;
+    }
+
+    .face-stage {
+        align-items: flex-start;
+        padding: 20px 10px 8px;
+    }
+
+    .robot-frame {
+        width: min(var(--face-size), calc(100vw - 24px), calc(100vh - 180px));
+        height: min(var(--face-size), calc(100vw - 24px), calc(100vh - 180px));
+        max-width: 980px;
+        max-height: 980px;
+    }
+
+    .status {
+        bottom: 2vh;
+    }
+}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta
+        name="viewport"
+        content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+    <title>Robot Face</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="face-shell">
+        <section class="face-stage">
+            <div id="face-root" class="robot-frame" aria-label="Robot face">
+                <div id="robotFrame" class="robot-figma emotion-calm state-idle">
+                    <svg id="robotBase" class="robot-base" viewBox="0 0 220 220" aria-hidden="true"></svg>
+                    <div id="featuresLayer" class="features-layer">
+                        <img id="eyesLayer" class="eyes-layer" alt="Robot eyes">
+                        <img id="mouthLayer" class="mouth-layer" alt="Robot mouth">
+                    </div>
+                </div>
+                <div id="faceLabel" class="face-label"></div>
+            </div>
+            <div id="status" class="status" hidden></div>
+        </section>
+    </main>
+
+    <script src="ui-figma/emotions.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

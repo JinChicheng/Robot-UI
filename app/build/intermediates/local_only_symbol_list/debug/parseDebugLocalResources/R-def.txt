@@ -1,0 +1,21 @@
+R_DEF: Internal format may change without notice
+local
+color button_surface
+color button_text
+color panel_surface
+color robot_black
+id buttonHappy
+id buttonIdle
+id buttonListening
+id buttonSpeaking
+id buttonThinking
+id faceWebView
+layout activity_main
+string app_name
+string face_asset_url
+string state_happy
+string state_idle
+string state_listening
+string state_speaking
+string state_thinking
+style Theme.RobotUI

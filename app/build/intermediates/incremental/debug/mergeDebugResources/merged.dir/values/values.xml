@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="button_surface">#1B1B1B</color>
+    <color name="button_text">#F5F5F5</color>
+    <color name="panel_surface">#101010</color>
+    <color name="robot_black">#000000</color>
+    <string name="app_name">Robot UI MVP</string>
+    <string name="face_asset_url">file:///android_asset/face/index.html</string>
+    <string name="state_happy">Happy</string>
+    <string name="state_idle">Idle</string>
+    <string name="state_listening">Listening</string>
+    <string name="state_speaking">Speaking</string>
+    <string name="state_thinking">Thinking</string>
+    <style name="Theme.RobotUI" parent="@android:style/Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/robot_black</item>
+        <item name="android:statusBarColor">@color/robot_black</item>
+        <item name="android:navigationBarColor">@color/robot_black</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>
