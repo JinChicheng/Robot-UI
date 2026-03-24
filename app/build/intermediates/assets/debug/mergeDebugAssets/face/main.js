@@ -1,23 +1,52 @@
-const FACE_STATE_MAP = {
-    idle: "calm",
-    listening: "calm",
-    thinking: "thinking",
-    speaking: "happy",
-    happy: "happy",
+const EMOTION_CONFIG = {
+    calm: {
+        asset: "ui-canvas/calm.png",
+        glow: "#7ed7ff",
+        stateClass: "state-calm",
+    },
+    happy: {
+        asset: "ui-canvas/happy.png",
+        glow: "#ffd54f",
+        stateClass: "state-happy",
+    },
+    speaking: {
+        asset: "ui-canvas/happy.png",
+        glow: "#ffb74d",
+        stateClass: "state-speaking",
+    },
+    thinking: {
+        asset: "ui-canvas/thinking.png",
+        glow: "#b388ff",
+        stateClass: "state-thinking",
+    },
+    angry: {
+        asset: "ui-canvas/angry.png",
+        glow: "#ff6b6b",
+        stateClass: "state-angry",
+    },
+    bored: {
+        asset: "ui-canvas/bored.png",
+        glow: "#90a4ae",
+        stateClass: "state-bored",
+    },
+    tired: {
+        asset: "ui-canvas/tired.png",
+        glow: "#80cbc4",
+        stateClass: "state-tired",
+    },
 };
 
-const DEFAULT_STATE = "idle";
-const DEFAULT_LOOK = { x: 0.5, y: 0.5 };
-const FACE_SIZE_PADDING = 40;
+const DEFAULT_STATE = "calm";
+const FACE_SIZE_PADDING = 44;
 const TALL_PHONE_LANDSCAPE_RATIO = 2.15;
 const PORTRAIT_RATIO_THRESHOLD = 1.0;
 
 let currentState = DEFAULT_STATE;
-let currentEmotion = FACE_STATE_MAP[DEFAULT_STATE];
-let gazeTimer = null;
-let gazeResetTimer = null;
-let stateInterval = null;
-let stateTimeout = null;
+let driftTimer = null;
+let driftResetTimer = null;
+let speakingTimer = null;
+let speakingFocusTimer = null;
+let activeImageIndex = 0;
 
 function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
@@ -27,35 +56,17 @@ function randomBetween(min, max) {
     return min + Math.random() * (max - min);
 }
 
-function showStatus(message) {
-    const status = document.getElementById("status");
-    if (!status) {
-        return;
-    }
-
-    if (!message) {
-        status.hidden = true;
-        status.textContent = "";
-        return;
-    }
-
-    status.hidden = false;
-    status.textContent = message;
-}
-
-function ensureFaceReady() {
+function ensureReady() {
     return Boolean(
-        window.robotEmotionLibrary &&
-        document.getElementById("robotFrame") &&
-        document.getElementById("robotBase") &&
-        document.getElementById("eyesLayer") &&
-        document.getElementById("mouthLayer") &&
-        document.getElementById("faceLabel")
+        document.getElementById("face-root") &&
+        document.getElementById("robotCanvasFace") &&
+        document.getElementById("emotionImageA") &&
+        document.getElementById("emotionImageB")
     );
 }
 
-function getEmotionConfig(emotion) {
-    return window.robotEmotionLibrary?.[emotion] || window.robotEmotionLibrary?.calm;
+function getConfig(state) {
+    return EMOTION_CONFIG[state] || EMOTION_CONFIG[DEFAULT_STATE];
 }
 
 function getViewportMetrics() {
@@ -72,13 +83,13 @@ function getViewportMetrics() {
     const aspectRatio = stageRect.width / Math.max(stageRect.height, 1);
     const isPortrait = aspectRatio < PORTRAIT_RATIO_THRESHOLD;
     const isTallPhoneLandscape = aspectRatio >= TALL_PHONE_LANDSCAPE_RATIO;
-    const sizeRatio = isPortrait ? 0.8 : (isTallPhoneLandscape ? 0.62 : 0.68);
+    const sizeRatio = isPortrait ? 0.8 : (isTallPhoneLandscape ? 0.58 : 0.64);
     const targetSize = Math.floor(Math.min(safeWidth, safeHeight) * sizeRatio);
     const offsetY = isPortrait
-        ? Math.round(Math.min(stageRect.height * 0.025, 22))
+        ? Math.round(Math.min(stageRect.height * 0.02, 18))
         : isTallPhoneLandscape
-            ? Math.round(Math.min(stageRect.height * 0.018, 18))
-            : Math.round(Math.min(stageRect.height * 0.01, 8));
+            ? Math.round(Math.min(stageRect.height * 0.012, 10))
+            : Math.round(Math.min(stageRect.height * 0.008, 6));
 
     return { frame, targetSize, offsetY };
 }
@@ -91,216 +102,175 @@ function syncFaceViewport() {
 
     const { frame, targetSize, offsetY } = metrics;
     frame.style.setProperty("--face-size", `${targetSize}px`);
-    frame.style.setProperty("--face-offset-x", "0px");
     frame.style.setProperty("--face-offset-y", `${-offsetY}px`);
+    frame.style.setProperty("--face-offset-x", "0px");
 }
 
-function buildBaseSvg(emotion) {
-    const config = getEmotionConfig(emotion);
-    const { primary, secondary } = config.colors;
-
-    return `
-        <defs>
-            <linearGradient id="outer-ring" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="${primary}" />
-                <stop offset="50%" stop-color="${secondary}" />
-                <stop offset="100%" stop-color="${primary}" />
-            </linearGradient>
-            <radialGradient id="face-gradient" cx="50%" cy="40%">
-                <stop offset="0%" stop-color="#1a1a1a" />
-                <stop offset="100%" stop-color="#0a0a0a" />
-            </radialGradient>
-            <filter id="face-glow">
-                <feGaussianBlur stdDeviation="4" result="coloredBlur"></feGaussianBlur>
-                <feMerge>
-                    <feMergeNode in="coloredBlur"></feMergeNode>
-                    <feMergeNode in="SourceGraphic"></feMergeNode>
-                </feMerge>
-            </filter>
-        </defs>
-        <circle cx="110" cy="110" r="105" fill="url(#outer-ring)" filter="url(#face-glow)"></circle>
-        <circle cx="110" cy="110" r="95" fill="#0a0a0a"></circle>
-        <circle cx="110" cy="110" r="85" fill="url(#face-gradient)"></circle>
-        <ellipse cx="80" cy="60" rx="30" ry="25" fill="${primary}" opacity="0.15"></ellipse>
-    `;
+function resetDrift() {
+    const face = document.getElementById("robotCanvasFace");
+    face.style.setProperty("--drift-x", "0px");
+    face.style.setProperty("--drift-y", "0px");
 }
 
-function applyEmotion(emotion) {
-    if (!ensureFaceReady()) {
-        return false;
-    }
-
-    const config = getEmotionConfig(emotion);
-    const robotFrame = document.getElementById("robotFrame");
-    const robotBase = document.getElementById("robotBase");
-    const eyesLayer = document.getElementById("eyesLayer");
-    const mouthLayer = document.getElementById("mouthLayer");
-    const faceLabel = document.getElementById("faceLabel");
-
-    currentEmotion = emotion;
-    robotFrame.className = `robot-figma emotion-${emotion} state-${currentState}`;
-    robotBase.innerHTML = buildBaseSvg(emotion);
-    eyesLayer.src = config.eyes;
-    mouthLayer.src = config.mouth;
-    faceLabel.textContent = config.label;
-    faceLabel.style.color = config.colors.primary;
-    return true;
-}
-
-function setFaceExpression(expression) {
-    const targetEmotion = String(expression || "calm").toLowerCase();
-    return applyEmotion(window.robotEmotionLibrary[targetEmotion] ? targetEmotion : "calm");
-}
-
-function applyLook(x, y) {
-    const robotFrame = document.getElementById("robotFrame");
-    const featuresLayer = document.getElementById("featuresLayer");
-    const safeX = clamp(Number(x), 0, 1);
-    const safeY = clamp(Number(y), 0, 1);
-    const lookX = (safeX - 0.5) * 18;
-    const lookY = (safeY - 0.5) * 14;
-
-    robotFrame.style.setProperty("--look-x", `${lookX * 0.35}px`);
-    robotFrame.style.setProperty("--look-y", `${lookY * 0.22}px`);
-    featuresLayer.style.setProperty("--feature-look-x", `${lookX}px`);
-    featuresLayer.style.setProperty("--feature-look-y", `${lookY}px`);
-    return true;
-}
-
-function lookAt(x, y) {
-    if (!ensureFaceReady()) {
-        return false;
-    }
-    return applyLook(
-        Number.isFinite(Number(x)) ? Number(x) : DEFAULT_LOOK.x,
-        Number.isFinite(Number(y)) ? Number(y) : DEFAULT_LOOK.y,
-    );
-}
-
-function resetGaze() {
-    if (!ensureFaceReady()) {
-        return false;
-    }
-    return applyLook(DEFAULT_LOOK.x, DEFAULT_LOOK.y);
+function getImageSlots() {
+    return [
+        document.getElementById("emotionImageA"),
+        document.getElementById("emotionImageB"),
+    ];
 }
 
 function clearStateTimers() {
-    window.clearTimeout(gazeTimer);
-    window.clearTimeout(gazeResetTimer);
-    window.clearInterval(stateInterval);
-    window.clearTimeout(stateTimeout);
-    gazeTimer = null;
-    gazeResetTimer = null;
-    stateInterval = null;
-    stateTimeout = null;
+    window.clearTimeout(driftTimer);
+    window.clearTimeout(driftResetTimer);
+    window.clearTimeout(speakingTimer);
+    window.clearTimeout(speakingFocusTimer);
 }
 
-function scheduleReset(delayMs) {
-    window.clearTimeout(gazeResetTimer);
-    gazeResetTimer = window.setTimeout(() => {
-        resetGaze();
-    }, delayMs);
-}
+function showAsset(asset, immediate = false, forceTransition = false) {
+    const slots = getImageSlots();
+    const currentImage = slots[activeImageIndex];
+    const nextIndex = activeImageIndex === 0 ? 1 : 0;
+    const nextImage = slots[nextIndex];
 
-function scheduleGazeDrift() {
-    const driftMap = {
-        calm: { delayMin: 2300, delayMax: 4200, rangeX: 0.05, rangeY: 0.03, resetMin: 520, resetMax: 900 },
-        happy: { delayMin: 1400, delayMax: 2400, rangeX: 0.035, rangeY: 0.02, resetMin: 260, resetMax: 420 },
-        angry: { delayMin: 1700, delayMax: 2600, rangeX: 0.04, rangeY: 0.025, resetMin: 320, resetMax: 520 },
-        thinking: { delayMin: 1800, delayMax: 3000, rangeX: 0.08, rangeY: 0.05, resetMin: 500, resetMax: 820 },
-    };
-
-    const drift = driftMap[currentEmotion] || driftMap.calm;
-    window.clearTimeout(gazeTimer);
-    gazeTimer = window.setTimeout(() => {
-        lookAt(
-            DEFAULT_LOOK.x + randomBetween(-drift.rangeX, drift.rangeX),
-            DEFAULT_LOOK.y + randomBetween(-drift.rangeY, drift.rangeY),
-        );
-        scheduleReset(randomBetween(drift.resetMin, drift.resetMax));
-        scheduleGazeDrift();
-    }, randomBetween(drift.delayMin, drift.delayMax));
-}
-
-function applyListeningMotion() {
-    stateTimeout = window.setTimeout(() => {
-        lookAt(0.48, 0.47);
-        scheduleReset(420);
-    }, 250);
-}
-
-function applyThinkingMotion() {
-    stateInterval = window.setInterval(() => {
-        lookAt(
-            DEFAULT_LOOK.x + randomBetween(-0.09, 0.06),
-            DEFAULT_LOOK.y - randomBetween(0.03, 0.08),
-        );
-        scheduleReset(randomBetween(500, 840));
-    }, randomBetween(2200, 3000));
-}
-
-function applySpeakingMotion() {
-    stateInterval = window.setInterval(() => {
-        lookAt(
-            DEFAULT_LOOK.x + randomBetween(-0.025, 0.025),
-            DEFAULT_LOOK.y + randomBetween(-0.018, 0.018),
-        );
-        scheduleReset(randomBetween(160, 280));
-    }, 320);
-}
-
-function applyHappyMotion() {
-    stateInterval = window.setInterval(() => {
-        lookAt(
-            DEFAULT_LOOK.x + randomBetween(-0.03, 0.03),
-            DEFAULT_LOOK.y + randomBetween(-0.02, 0.02),
-        );
-        scheduleReset(randomBetween(200, 320));
-    }, 1700);
-}
-
-function applyStateMotion(state) {
-    clearStateTimers();
-
-    const robotFrame = document.getElementById("robotFrame");
-    robotFrame.className = `robot-figma emotion-${currentEmotion} state-${state}`;
-
-    if (state === "listening") {
-        applyListeningMotion();
-    } else if (state === "thinking") {
-        applyThinkingMotion();
-    } else if (state === "speaking") {
-        applySpeakingMotion();
-    } else if (state === "happy") {
-        applyHappyMotion();
-    }
-
-    scheduleGazeDrift();
-}
-
-function setFaceState(state) {
-    if (!ensureFaceReady()) {
-        return false;
-    }
-
-    const normalizedState = String(state || DEFAULT_STATE).toLowerCase();
-    const emotion = FACE_STATE_MAP[normalizedState] || FACE_STATE_MAP[DEFAULT_STATE];
-    currentState = normalizedState;
-    const applied = setFaceExpression(emotion);
-    applyStateMotion(currentState);
-    return applied;
-}
-
-function initFace() {
-    if (!ensureFaceReady()) {
-        showStatus("Missing UI-figma emotion assets");
+    if (immediate || !currentImage.dataset.asset) {
+        currentImage.src = asset;
+        currentImage.dataset.asset = asset;
+        currentImage.classList.add("is-active");
+        nextImage.classList.remove("is-active");
+        nextImage.removeAttribute("src");
+        activeImageIndex = slots.indexOf(currentImage);
         return;
     }
 
-    showStatus("");
+    if (!forceTransition && currentImage.dataset.asset === asset && currentImage.classList.contains("is-active")) {
+        return;
+    }
+
+    nextImage.src = asset;
+    nextImage.dataset.asset = asset;
+
+    window.requestAnimationFrame(() => {
+        nextImage.classList.add("is-active");
+        currentImage.classList.remove("is-active");
+        activeImageIndex = nextIndex;
+    });
+}
+
+function scheduleDrift() {
+    const face = document.getElementById("robotCanvasFace");
+    const configMap = {
+        calm: { delayMin: 2200, delayMax: 4200, rangeX: 8, rangeY: 5, resetMin: 420, resetMax: 760 },
+        happy: { delayMin: 1200, delayMax: 2200, rangeX: 6, rangeY: 4, resetMin: 240, resetMax: 420 },
+        speaking: { delayMin: 700, delayMax: 1100, rangeX: 4, rangeY: 3, resetMin: 120, resetMax: 180 },
+        thinking: { delayMin: 1600, delayMax: 2800, rangeX: 10, rangeY: 7, resetMin: 520, resetMax: 840 },
+        angry: { delayMin: 1400, delayMax: 2200, rangeX: 5, rangeY: 3, resetMin: 180, resetMax: 320 },
+        bored: { delayMin: 2600, delayMax: 4200, rangeX: 5, rangeY: 4, resetMin: 680, resetMax: 1040 },
+        tired: { delayMin: 3000, delayMax: 4800, rangeX: 3, rangeY: 3, resetMin: 820, resetMax: 1180 },
+    };
+    const config = configMap[currentState] || configMap[DEFAULT_STATE];
+
+    window.clearTimeout(driftTimer);
+    driftTimer = window.setTimeout(() => {
+        face.style.setProperty("--drift-x", `${randomBetween(-config.rangeX, config.rangeX)}px`);
+        face.style.setProperty("--drift-y", `${randomBetween(-config.rangeY, config.rangeY)}px`);
+
+        window.clearTimeout(driftResetTimer);
+        driftResetTimer = window.setTimeout(() => {
+            resetDrift();
+        }, randomBetween(config.resetMin, config.resetMax));
+
+        scheduleDrift();
+    }, randomBetween(config.delayMin, config.delayMax));
+}
+
+function startSpeakingLoop() {
+    const speakingFrames = [
+        EMOTION_CONFIG.speaking.asset,
+        EMOTION_CONFIG.calm.asset,
+        EMOTION_CONFIG.speaking.asset,
+        EMOTION_CONFIG.happy.asset,
+    ];
+    let frameIndex = 0;
+
+    const runNextFrame = () => {
+        if (currentState !== "speaking") {
+            return;
+        }
+
+        showAsset(speakingFrames[frameIndex], frameIndex === 0);
+        lookAt(randomBetween(0.44, 0.56), randomBetween(0.46, 0.54));
+
+        window.clearTimeout(speakingFocusTimer);
+        speakingFocusTimer = window.setTimeout(() => {
+            resetDrift();
+        }, randomBetween(120, 180));
+
+        frameIndex = (frameIndex + 1) % speakingFrames.length;
+        speakingTimer = window.setTimeout(runNextFrame, randomBetween(180, 280));
+    };
+
+    runNextFrame();
+}
+
+function applyEmotion(state) {
+    if (!ensureReady()) {
+        return false;
+    }
+
+    const config = getConfig(state);
+    const face = document.getElementById("robotCanvasFace");
+    const root = document.documentElement;
+    const previousState = currentState;
+
+    currentState = state;
+    clearStateTimers();
+    face.className = `robot-canvas-face emotion-${state} ${config.stateClass}`;
+    root.style.setProperty("--emotion-glow", config.glow);
+    showAsset(config.asset, false, previousState !== state);
+    resetDrift();
+    scheduleDrift();
+    if (state === "speaking") {
+        startSpeakingLoop();
+    }
+    return true;
+}
+
+function setFaceState(state) {
+    return applyEmotion(String(state || DEFAULT_STATE).toLowerCase());
+}
+
+function setFaceExpression(expression) {
+    return applyEmotion(String(expression || DEFAULT_STATE).toLowerCase());
+}
+
+function lookAt(x, y) {
+    if (!ensureReady()) {
+        return false;
+    }
+    const face = document.getElementById("robotCanvasFace");
+    const safeX = clamp(Number.isFinite(Number(x)) ? Number(x) : 0.5, 0, 1);
+    const safeY = clamp(Number.isFinite(Number(y)) ? Number(y) : 0.5, 0, 1);
+    face.style.setProperty("--drift-x", `${(safeX - 0.5) * 18}px`);
+    face.style.setProperty("--drift-y", `${(safeY - 0.5) * 12}px`);
+    return true;
+}
+
+function resetGaze() {
+    if (!ensureReady()) {
+        return false;
+    }
+    resetDrift();
+    return true;
+}
+
+function initFace() {
+    if (!ensureReady()) {
+        return;
+    }
+
     syncFaceViewport();
+    showAsset(getConfig(DEFAULT_STATE).asset, true);
     setFaceState(DEFAULT_STATE);
-    resetGaze();
     window.requestAnimationFrame(syncFaceViewport);
 }
 

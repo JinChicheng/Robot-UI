@@ -2,9 +2,11 @@
 <resources>
     <string name="app_name">Robot UI MVP</string>
     <string name="face_asset_url">file:///android_asset/face/index.html</string>
-    <string name="state_idle">Idle</string>
-    <string name="state_listening">Listening</string>
-    <string name="state_thinking">Thinking</string>
-    <string name="state_speaking">Speaking</string>
-    <string name="state_happy">Happy</string>
+    <string name="state_calm">平静</string>
+    <string name="state_happy_cn">开心</string>
+    <string name="state_speaking">说话</string>
+    <string name="state_thinking">思考</string>
+    <string name="state_angry">生气</string>
+    <string name="state_bored">无聊</string>
+    <string name="state_tired">疲惫</string>
 </resources>

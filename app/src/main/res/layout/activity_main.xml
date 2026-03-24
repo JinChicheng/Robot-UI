@@ -42,32 +42,22 @@
             android:paddingBottom="14dp">
 
             <Button
-                android:id="@+id/buttonIdle"
+                android:id="@+id/buttonCalm"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:layout_marginEnd="8dp"
                 android:backgroundTint="@color/button_surface"
-                android:text="@string/state_idle"
+                android:text="@string/state_calm"
                 android:textAllCaps="false"
                 android:textColor="@color/button_text" />
 
             <Button
-                android:id="@+id/buttonListening"
+                android:id="@+id/buttonHappy"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:layout_marginEnd="8dp"
                 android:backgroundTint="@color/button_surface"
-                android:text="@string/state_listening"
-                android:textAllCaps="false"
-                android:textColor="@color/button_text" />
-
-            <Button
-                android:id="@+id/buttonThinking"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:backgroundTint="@color/button_surface"
-                android:text="@string/state_thinking"
+                android:text="@string/state_happy_cn"
                 android:textAllCaps="false"
                 android:textColor="@color/button_text" />
 
@@ -82,11 +72,41 @@
                 android:textColor="@color/button_text" />
 
             <Button
-                android:id="@+id/buttonHappy"
+                android:id="@+id/buttonThinking"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="@color/button_surface"
+                android:text="@string/state_thinking"
+                android:textAllCaps="false"
+                android:textColor="@color/button_text" />
+
+            <Button
+                android:id="@+id/buttonAngry"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="@color/button_surface"
+                android:text="@string/state_angry"
+                android:textAllCaps="false"
+                android:textColor="@color/button_text" />
+
+            <Button
+                android:id="@+id/buttonBored"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="@color/button_surface"
+                android:text="@string/state_bored"
+                android:textAllCaps="false"
+                android:textColor="@color/button_text" />
+
+            <Button
+                android:id="@+id/buttonTired"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:backgroundTint="@color/button_surface"
-                android:text="@string/state_happy"
+                android:text="@string/state_tired"
                 android:textAllCaps="false"
                 android:textColor="@color/button_text" />
         </LinearLayout>

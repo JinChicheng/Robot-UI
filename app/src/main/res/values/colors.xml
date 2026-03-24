@@ -4,4 +4,12 @@
     <color name="panel_surface">#101010</color>
     <color name="button_surface">#1B1B1B</color>
     <color name="button_text">#F5F5F5</color>
+    <color name="button_text_selected">#091014</color>
+    <color name="emotion_calm">#7ED7FF</color>
+    <color name="emotion_happy">#FFD54F</color>
+    <color name="emotion_speaking">#FFB74D</color>
+    <color name="emotion_thinking">#B388FF</color>
+    <color name="emotion_angry">#FF6B6B</color>
+    <color name="emotion_bored">#90A4AE</color>
+    <color name="emotion_tired">#80CBC4</color>
 </resources>

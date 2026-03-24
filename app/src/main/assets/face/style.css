@@ -1,3 +1,7 @@
+:root {
+    --emotion-glow: #7ed7ff;
+}
+
 html,
 body {
     margin: 0;
@@ -23,7 +27,7 @@ body {
     align-items: center;
     justify-content: center;
     background:
-        radial-gradient(circle at center, rgba(32, 32, 32, 0.55), rgba(0, 0, 0, 0) 44%),
+        radial-gradient(circle at center, rgba(24, 24, 24, 0.55), rgba(0, 0, 0, 0) 46%),
         linear-gradient(180deg, #050505 0%, #000000 100%);
     padding: 12px;
     box-sizing: border-box;
@@ -43,68 +47,96 @@ body {
 .robot-frame {
     --face-size: 520px;
     --face-offset-x: 0px;
-    --face-offset-y: -8px;
+    --face-offset-y: -6px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: min(var(--face-size), calc(100vw - 56px), calc(100vh - 56px));
-    height: min(var(--face-size), calc(100vw - 56px), calc(100vh - 56px));
-    max-width: 820px;
-    max-height: 820px;
+    width: min(var(--face-size), calc(100vw - 52px), calc(100vh - 52px));
+    height: min(var(--face-size), calc(100vw - 52px), calc(100vh - 52px));
+    max-width: 860px;
+    max-height: 860px;
     transform: translate3d(var(--face-offset-x), var(--face-offset-y), 0);
 }
 
-.robot-figma {
-    --look-x: 0px;
-    --look-y: 0px;
+.robot-canvas-face {
+    --drift-x: 0px;
+    --drift-y: 0px;
     position: relative;
     width: 100%;
     height: 100%;
     aspect-ratio: 1 / 1;
-    transform: translate3d(var(--look-x), var(--look-y), 0);
+    transform: translate3d(var(--drift-x), var(--drift-y), 0);
     transform-origin: center;
-    filter: drop-shadow(0 0 28px rgba(255, 255, 255, 0.08));
+    filter: drop-shadow(0 0 38px color-mix(in srgb, var(--emotion-glow) 24%, transparent));
 }
 
-.robot-base,
-.features-layer,
-.eyes-layer,
-.mouth-layer {
+.emotion-image {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-}
-
-.features-layer {
-    --feature-look-x: 0px;
-    --feature-look-y: 0px;
-    transform: translate3d(var(--feature-look-x), var(--feature-look-y), 0);
-    transform-origin: center;
-}
-
-.eyes-layer,
-.mouth-layer {
     object-fit: contain;
     user-select: none;
     -webkit-user-drag: none;
     backface-visibility: hidden;
+    opacity: 0;
+    transform: scale(0.985);
+    transition: opacity 280ms ease, transform 320ms ease;
+    will-change: opacity, transform;
 }
 
-.eyes-layer {
-    z-index: 2;
+.emotion-image.is-active {
+    opacity: 1;
+    transform: scale(1);
 }
 
-.mouth-layer {
+.glow-halo {
+    position: absolute;
+    inset: 8%;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--emotion-glow) 22%, transparent) 0%, transparent 68%);
+    filter: blur(18px);
+    opacity: 0.75;
+}
+
+.speaking-bars {
+    position: absolute;
+    left: 50%;
+    bottom: 8%;
     z-index: 3;
+    display: none;
+    align-items: flex-end;
+    gap: 8px;
+    transform: translateX(-50%);
 }
 
-.face-label {
-    margin-top: 14px;
-    font-size: 18px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
+.speaking-bars span {
+    width: 10px;
+    height: 16px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--emotion-glow) 88%, #ffffff 12%);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--emotion-glow) 28%, transparent);
+    opacity: 0.88;
+}
+
+.thinking-dots {
+    position: absolute;
+    right: 7%;
+    top: 10%;
+    z-index: 3;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.thinking-dots span {
+    display: block;
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--emotion-glow) 86%, #ffffff 14%);
+    opacity: 0.75;
 }
 
 .status {
@@ -121,96 +153,135 @@ body {
     letter-spacing: 0.04em;
 }
 
-.emotion-calm .robot-figma {
-    animation: calmFloat 4.2s ease-in-out infinite;
+.emotion-calm {
+    animation: calmFloat 4.4s ease-in-out infinite;
 }
 
-.emotion-calm .mouth-layer {
-    animation: calmMouth 3s ease-in-out infinite;
+.emotion-happy {
+    animation: happyBounce 2.1s ease-in-out infinite;
 }
 
-.emotion-happy .robot-figma {
-    animation: happyBounce 2.2s ease-in-out infinite;
+.emotion-speaking {
+    animation: speakingTalk 1.08s ease-in-out infinite;
 }
 
-.emotion-happy .mouth-layer {
-    animation: happyMouth 1s ease-in-out infinite;
-}
-
-.emotion-angry .robot-figma {
-    animation: angryRock 0.9s ease-in-out infinite;
-}
-
-.emotion-angry .mouth-layer {
-    animation: angryMouth 0.65s ease-in-out infinite;
-}
-
-.emotion-thinking .robot-figma {
+.emotion-thinking {
     animation: thinkingFloat 3.1s ease-in-out infinite;
 }
 
-.emotion-thinking .mouth-layer {
-    animation: thinkingPulse 1.8s ease-in-out infinite;
+.emotion-angry {
+    animation: angryShake 0.72s ease-in-out infinite;
 }
 
-.state-speaking .mouth-layer {
-    animation: speakingMouth 0.25s ease-in-out infinite;
+.emotion-bored {
+    animation: boredSway 4.2s ease-in-out infinite;
+    filter: grayscale(0.08) brightness(0.96) drop-shadow(0 0 24px color-mix(in srgb, var(--emotion-glow) 18%, transparent));
 }
 
-.state-listening .eyes-layer {
-    animation: listeningEyes 2.6s ease-in-out infinite;
+.emotion-tired {
+    animation: tiredDroop 4.8s ease-in-out infinite;
+    filter: saturate(0.9) brightness(0.94) drop-shadow(0 0 20px color-mix(in srgb, var(--emotion-glow) 18%, transparent));
+}
+
+.emotion-thinking .thinking-dots {
+    display: flex;
+    animation: thoughtOrbit 2.4s ease-in-out infinite;
+}
+
+.emotion-speaking .speaking-bars {
+    display: flex;
+}
+
+.emotion-speaking .glow-halo {
+    animation: speakingGlow 0.9s ease-in-out infinite;
+}
+
+.emotion-speaking .speaking-bars span:nth-child(1) {
+    animation: speakingBar 0.72s ease-in-out infinite;
+}
+
+.emotion-speaking .speaking-bars span:nth-child(2) {
+    animation: speakingBar 0.72s ease-in-out 0.12s infinite;
+}
+
+.emotion-speaking .speaking-bars span:nth-child(3) {
+    animation: speakingBar 0.72s ease-in-out 0.24s infinite;
+}
+
+.emotion-speaking .speaking-bars span:nth-child(4) {
+    animation: speakingBar 0.72s ease-in-out 0.36s infinite;
+}
+
+.emotion-thinking .thinking-dots span:nth-child(1) {
+    animation: dotPulse 1.2s ease-in-out infinite;
+}
+
+.emotion-thinking .thinking-dots span:nth-child(2) {
+    animation: dotPulse 1.2s ease-in-out 0.18s infinite;
+}
+
+.emotion-thinking .thinking-dots span:nth-child(3) {
+    animation: dotPulse 1.2s ease-in-out 0.36s infinite;
 }
 
 @keyframes calmFloat {
-    0%, 100% { transform: translate3d(var(--look-x), var(--look-y), 0) scale(1); }
-    50% { transform: translate3d(var(--look-x), calc(var(--look-y) - 6px), 0) scale(1.01); }
-}
-
-@keyframes calmMouth {
-    0%, 100% { transform: scale(1, 1); opacity: 0.96; }
-    50% { transform: scale(1.03, 0.98); opacity: 1; }
+    0%, 100% { transform: translate3d(var(--drift-x), var(--drift-y), 0) scale(1); }
+    50% { transform: translate3d(var(--drift-x), calc(var(--drift-y) - 6px), 0) scale(1.01); }
 }
 
 @keyframes happyBounce {
-    0%, 100% { transform: translate3d(var(--look-x), var(--look-y), 0) scale(1); }
-    35% { transform: translate3d(var(--look-x), calc(var(--look-y) - 10px), 0) scale(1.03); }
-    70% { transform: translate3d(var(--look-x), calc(var(--look-y) - 4px), 0) scale(1.01); }
+    0%, 100% { transform: translate3d(var(--drift-x), var(--drift-y), 0) scale(1); }
+    30% { transform: translate3d(var(--drift-x), calc(var(--drift-y) - 10px), 0) scale(1.035); }
+    65% { transform: translate3d(var(--drift-x), calc(var(--drift-y) - 4px), 0) scale(1.012); }
 }
 
-@keyframes happyMouth {
-    0%, 100% { transform: scale(1, 1); }
-    50% { transform: scale(1.08, 1.05); }
-}
-
-@keyframes angryRock {
-    0%, 100% { transform: translate3d(var(--look-x), var(--look-y), 0) rotate(0deg); }
-    25% { transform: translate3d(calc(var(--look-x) - 2px), var(--look-y), 0) rotate(-1.4deg); }
-    75% { transform: translate3d(calc(var(--look-x) + 2px), var(--look-y), 0) rotate(1.4deg); }
-}
-
-@keyframes angryMouth {
-    0%, 100% { transform: scale(1, 1); }
-    50% { transform: scale(1.05, 0.95); }
+@keyframes speakingTalk {
+    0%, 100% { transform: translate3d(var(--drift-x), var(--drift-y), 0) scale(1) rotate(0deg); }
+    22% { transform: translate3d(calc(var(--drift-x) + 2px), calc(var(--drift-y) - 6px), 0) scale(1.022) rotate(0.45deg); }
+    50% { transform: translate3d(var(--drift-x), calc(var(--drift-y) - 3px), 0) scale(1.01) rotate(0deg); }
+    76% { transform: translate3d(calc(var(--drift-x) - 2px), calc(var(--drift-y) - 5px), 0) scale(1.018) rotate(-0.45deg); }
 }
 
 @keyframes thinkingFloat {
-    0%, 100% { transform: translate3d(var(--look-x), var(--look-y), 0); }
-    50% { transform: translate3d(calc(var(--look-x) - 4px), calc(var(--look-y) - 8px), 0); }
+    0%, 100% { transform: translate3d(var(--drift-x), var(--drift-y), 0) scale(1); }
+    50% { transform: translate3d(calc(var(--drift-x) - 4px), calc(var(--drift-y) - 9px), 0) scale(1.01); }
 }
 
-@keyframes thinkingPulse {
-    0%, 100% { transform: scale(1); opacity: 0.94; }
-    50% { transform: scale(1.04); opacity: 1; }
+@keyframes angryShake {
+    0%, 100% { transform: translate3d(var(--drift-x), var(--drift-y), 0) rotate(0deg); }
+    25% { transform: translate3d(calc(var(--drift-x) - 3px), var(--drift-y), 0) rotate(-1.2deg); }
+    75% { transform: translate3d(calc(var(--drift-x) + 3px), var(--drift-y), 0) rotate(1.2deg); }
 }
 
-@keyframes speakingMouth {
-    0%, 100% { transform: scale(1, 1); }
-    50% { transform: scale(1.12, 0.86); }
+@keyframes boredSway {
+    0%, 100% { transform: translate3d(var(--drift-x), var(--drift-y), 0); }
+    50% { transform: translate3d(calc(var(--drift-x) - 5px), calc(var(--drift-y) + 3px), 0); }
 }
 
-@keyframes listeningEyes {
-    0%, 100% { transform: scale(1, 1); }
-    50% { transform: scale(1.01, 0.98); }
+@keyframes tiredDroop {
+    0%, 100% { transform: translate3d(var(--drift-x), var(--drift-y), 0) scale(1); }
+    50% { transform: translate3d(var(--drift-x), calc(var(--drift-y) + 8px), 0) scale(0.985); }
+}
+
+@keyframes thoughtOrbit {
+    0%, 100% { transform: translateY(0); opacity: 0.86; }
+    50% { transform: translateY(-6px); opacity: 1; }
+}
+
+@keyframes speakingGlow {
+    0%, 100% { opacity: 0.56; transform: scale(0.98); }
+    50% { opacity: 0.9; transform: scale(1.04); }
+}
+
+@keyframes speakingBar {
+    0%, 100% { height: 16px; opacity: 0.4; }
+    35% { height: 34px; opacity: 1; }
+    70% { height: 22px; opacity: 0.82; }
+}
+
+@keyframes dotPulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.18); opacity: 1; }
 }
 
 @media (max-width: 960px) {

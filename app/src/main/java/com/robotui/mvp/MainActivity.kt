@@ -2,6 +2,7 @@ package com.robotui.mvp
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -18,6 +19,7 @@ import org.json.JSONObject
 class MainActivity : Activity() {
 
     private lateinit var faceWebView: WebView
+    private lateinit var stateButtons: Map<String, Button>
     private var pageReady = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,7 +85,7 @@ class MainActivity : Activity() {
         faceWebView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 pageReady = true
-                setFaceState("idle")
+                applyStateSelection("calm")
             }
         }
 
@@ -91,16 +93,63 @@ class MainActivity : Activity() {
     }
 
     private fun setupButtons() {
-        bindStateButton(R.id.buttonIdle, "idle")
-        bindStateButton(R.id.buttonListening, "listening")
-        bindStateButton(R.id.buttonThinking, "thinking")
-        bindStateButton(R.id.buttonSpeaking, "speaking")
-        bindStateButton(R.id.buttonHappy, "happy")
+        stateButtons = linkedMapOf(
+            "calm" to findViewById(R.id.buttonCalm),
+            "happy" to findViewById(R.id.buttonHappy),
+            "speaking" to findViewById(R.id.buttonSpeaking),
+            "thinking" to findViewById(R.id.buttonThinking),
+            "angry" to findViewById(R.id.buttonAngry),
+            "bored" to findViewById(R.id.buttonBored),
+            "tired" to findViewById(R.id.buttonTired)
+        )
+
+        stateButtons.forEach { (state, button) ->
+            button.setOnClickListener {
+                applyStateSelection(state)
+            }
+        }
+
+        updateButtonStyles("calm")
     }
 
-    private fun bindStateButton(buttonId: Int, state: String) {
-        findViewById<Button>(buttonId).setOnClickListener {
-            setFaceState(state)
+    private fun applyStateSelection(state: String) {
+        setFaceState(state)
+        updateButtonStyles(state)
+    }
+
+    private fun updateButtonStyles(selectedState: String) {
+        if (!::stateButtons.isInitialized) {
+            return
+        }
+
+        val defaultBackground = getColor(R.color.button_surface)
+        val defaultText = getColor(R.color.button_text)
+        val selectedText = getColor(R.color.button_text_selected)
+
+        stateButtons.forEach { (state, button) ->
+            val backgroundColor = if (state == selectedState) {
+                getColor(accentColorForState(state))
+            } else {
+                defaultBackground
+            }
+            val textColor = if (state == selectedState) selectedText else defaultText
+
+            button.backgroundTintList = ColorStateList.valueOf(backgroundColor)
+            button.setTextColor(textColor)
+            button.alpha = if (state == selectedState) 1f else 0.9f
+        }
+    }
+
+    private fun accentColorForState(state: String): Int {
+        return when (state) {
+            "calm" -> R.color.emotion_calm
+            "happy" -> R.color.emotion_happy
+            "speaking" -> R.color.emotion_speaking
+            "thinking" -> R.color.emotion_thinking
+            "angry" -> R.color.emotion_angry
+            "bored" -> R.color.emotion_bored
+            "tired" -> R.color.emotion_tired
+            else -> R.color.button_surface
         }
     }
 
